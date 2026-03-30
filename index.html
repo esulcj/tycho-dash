@@ -23,12 +23,26 @@
 <body class="bg-white min-w-[375px]">
   <div x-cloak x-data="dashboard()" x-init="init()">
 
+    <!-- Offline banner -->
+    <template x-if="offline">
+      <div class="fixed top-0 left-0 right-0 z-50 bg-amber-50 border-b border-amber-300 text-amber-800 text-sm text-center px-4 py-2">
+        Offline — last data from <span x-text="lastGoodTime"></span>
+      </div>
+    </template>
+
+    <!-- Stale data warning (>10 min old) -->
+    <template x-if="!offline && isStale">
+      <div class="fixed top-0 left-0 right-0 z-50 bg-amber-50 border-b border-amber-300 text-amber-800 text-sm text-center px-4 py-2">
+        Data is stale — updated <span x-text="timeAgo(d.timestamp)"></span>
+      </div>
+    </template>
+
     <!-- Header -->
-    <header class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+    <header class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10" :class="(offline || isStale) ? 'mt-10' : ''">
       <div class="max-w-2xl mx-auto flex items-center justify-between">
-        <h1 class="text-lg font-bold text-gray-900">Tycho</h1>
+        <h1 class="text-lg font-bold text-gray-900">&#9889; Tycho Status</h1>
         <div class="flex items-center gap-2 text-xs text-gray-400">
-          <span x-text="timeAgo(d.timestamp)"></span>
+          <span x-text="'Updated ' + timeAgo(d.timestamp)"></span>
           <button @click="refresh()" class="p-1 hover:text-gray-600" title="Refresh">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -40,67 +54,60 @@
 
     <main class="max-w-2xl mx-auto px-4 py-4 space-y-4">
 
-      <!-- Costs -->
-      <section class="bg-white rounded-xl border border-gray-200 p-4">
-        <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Costs</h2>
-        <div class="flex items-baseline justify-between mb-2">
-          <span class="text-2xl font-bold text-gray-900">$<span x-text="fmt(d.costs.today)"></span></span>
-          <span class="text-sm text-gray-400">/ $<span x-text="fmt(d.costs.dailyLimit)"></span></span>
-        </div>
-        <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-          <div class="h-full rounded-full transition-all"
-               :class="costColor(d.costs.today, d.costs.dailyLimit)"
-               :style="'width:' + Math.min(100, (d.costs.today / d.costs.dailyLimit) * 100) + '%'"></div>
-        </div>
-        <p class="text-xs text-gray-400 mt-2">Session: $<span x-text="fmt(d.costs.session)"></span></p>
-      </section>
+      <!-- Cost Card -->
+      <section class="bg-white rounded-lg border border-gray-200 p-4">
+        <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Cost</h2>
 
-      <!-- Sessions -->
-      <section class="bg-white rounded-xl border border-gray-200 p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sessions</h2>
-          <span class="text-sm font-medium text-gray-900" x-text="d.sessions.active + ' active'"></span>
-        </div>
-        <ul class="space-y-2">
-          <template x-for="s in d.sessions.list" :key="s.channel">
-            <li class="flex items-center justify-between text-sm">
-              <span class="text-gray-700 font-medium" x-text="s.channel"></span>
-              <span class="text-gray-400 text-xs"><span x-text="s.turns"></span> turns · <span x-text="s.age"></span></span>
-            </li>
-          </template>
-        </ul>
-      </section>
+        <!-- Error state -->
+        <template x-if="d.costs.error">
+          <p class="text-sm text-gray-400">Budget data unavailable</p>
+        </template>
 
-      <!-- Emails -->
-      <section class="bg-white rounded-xl border border-gray-200 p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</h2>
-          <template x-if="d.emails.unread > 0">
-            <span class="inline-flex items-center gap-1 bg-red-50 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
-              <span x-text="d.emails.unread"></span> unread
-              <template x-if="isOlderThan24h(d.emails.oldest)"><span>⚠️</span></template>
-            </span>
-          </template>
-        </div>
-        <ul class="space-y-1.5">
-          <template x-for="(item, i) in d.emails.items" :key="i">
-            <li class="text-sm text-gray-600 truncate" x-text="item"></li>
-          </template>
-        </ul>
-        <template x-if="d.emails.items.length === 0">
-          <p class="text-sm text-gray-400">No emails</p>
+        <!-- Stale state -->
+        <template x-if="!d.costs.error && d.costs.stale">
+          <div>
+            <div class="bg-amber-50 border border-amber-200 text-amber-700 text-sm rounded px-3 py-2 mb-3">
+              Budget tracker offline since <span x-text="d.costs.lastDate"></span>
+            </div>
+            <div class="flex items-baseline justify-between mb-2">
+              <span class="text-2xl font-bold text-gray-400">$<span x-text="fmt(d.costs.totalUsd)"></span></span>
+              <span class="text-sm text-gray-400">/ $200</span>
+            </div>
+            <p class="text-xs text-gray-400"><span x-text="d.costs.sessions"></span> sessions</p>
+          </div>
+        </template>
+
+        <!-- Normal state -->
+        <template x-if="!d.costs.error && !d.costs.stale">
+          <div>
+            <div class="flex items-baseline justify-between mb-2">
+              <span class="text-2xl font-bold text-gray-900">$<span x-text="fmt(d.costs.totalUsd)"></span></span>
+              <span class="text-sm text-gray-400">/ $<span x-text="d.costs.dailyLimit"></span></span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+              <div class="h-full rounded-full transition-all"
+                   :class="costColor()"
+                   :style="'width:' + Math.min(100, (d.costs.totalUsd / d.costs.dailyLimit) * 100) + '%'"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-2"><span x-text="d.costs.sessions"></span> sessions</p>
+          </div>
         </template>
       </section>
 
-      <!-- Deploys -->
-      <section class="bg-white rounded-xl border border-gray-200 p-4">
+      <!-- Deploys Card -->
+      <section class="bg-white rounded-lg border border-gray-200 p-4">
         <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Deploys</h2>
         <ul class="space-y-2">
           <template x-for="dep in d.deploys" :key="dep.name">
             <li class="flex items-center justify-between text-sm">
               <div class="flex items-center gap-2">
-                <span x-text="deployIcon(dep)" class="text-base"></span>
-                <span class="text-gray-700" x-text="dep.name"></span>
+                <template x-if="dep.status === 'up'">
+                  <span class="text-green-600">&#10003;</span>
+                </template>
+                <template x-if="dep.status !== 'up'">
+                  <span class="text-red-600">&#10007;</span>
+                </template>
+                <span :class="dep.status === 'up' ? 'text-green-700' : 'text-red-600'" x-text="dep.name"></span>
               </div>
               <span class="text-xs text-gray-400" x-text="dep.code || '—'"></span>
             </li>
@@ -108,55 +115,98 @@
         </ul>
       </section>
 
-      <!-- Gas Town -->
-      <section class="bg-white rounded-xl border border-gray-200 p-4">
-        <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Gas Town</h2>
-        <div class="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p class="text-gray-400 text-xs">Daemon</p>
-            <p class="font-medium" :class="d.gastown.daemon === 'running' ? 'text-green-600' : 'text-gray-500'" x-text="d.gastown.daemon"></p>
-          </div>
-          <div>
-            <p class="text-gray-400 text-xs">Rigs</p>
-            <p class="font-medium text-gray-900" x-text="d.gastown.rigs"></p>
-          </div>
-          <div class="col-span-2">
-            <p class="text-gray-400 text-xs">Last Build</p>
-            <p class="font-medium text-gray-900" x-text="d.gastown.lastBuild"></p>
-          </div>
+      <!-- Email Card -->
+      <section class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</h2>
+
+          <!-- Error state -->
+          <template x-if="d.emails.error">
+            <span class="text-xs text-gray-400">Email check unavailable</span>
+          </template>
+
+          <!-- Badge -->
+          <template x-if="!d.emails.error && d.emails.count > 0">
+            <span class="inline-flex items-center gap-1 bg-red-50 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
+              <span x-text="d.emails.count"></span> unread
+            </span>
+          </template>
         </div>
+
+        <template x-if="d.emails.error">
+          <p class="text-sm text-gray-400">Email check unavailable</p>
+        </template>
+
+        <template x-if="!d.emails.error">
+          <div>
+            <!-- Oldest > 24h warning -->
+            <template x-if="d.emails.oldestAge && d.emails.oldestAge >= 24">
+              <div class="bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded px-2 py-1 mb-2">
+                Oldest email is <span x-text="Math.floor(d.emails.oldestAge)"></span>h+ old
+              </div>
+            </template>
+
+            <ul class="space-y-1.5">
+              <template x-for="(subj, i) in (d.emails.subjects || [])" :key="i">
+                <li class="text-sm text-gray-600 truncate" x-text="subj"></li>
+              </template>
+            </ul>
+            <template x-if="!d.emails.subjects || d.emails.subjects.length === 0">
+              <p class="text-sm text-gray-400" x-text="d.emails.count > 0 ? d.emails.count + ' messages (subjects unavailable)' : 'No emails'"></p>
+            </template>
+          </div>
+        </template>
       </section>
 
-      <!-- System -->
-      <section class="bg-white rounded-xl border border-gray-200 p-4">
+      <!-- Gastown Card -->
+      <section class="bg-white rounded-lg border border-gray-200 p-4">
+        <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Gas Town</h2>
+
+        <template x-if="!d.gastown.installed">
+          <p class="text-sm text-gray-400">Gas Town not installed</p>
+        </template>
+
+        <template x-if="d.gastown.installed">
+          <div>
+            <div class="flex items-center gap-4 text-sm mb-2">
+              <div>
+                <span class="text-gray-400 text-xs">Rigs</span>
+                <p class="font-medium text-gray-900" x-text="d.gastown.rigs"></p>
+              </div>
+            </div>
+            <template x-if="d.gastown.raw">
+              <pre class="text-xs text-gray-500 bg-gray-50 rounded p-2 overflow-x-auto whitespace-pre-wrap" x-text="d.gastown.raw"></pre>
+            </template>
+          </div>
+        </template>
+      </section>
+
+      <!-- System Card -->
+      <section class="bg-white rounded-lg border border-gray-200 p-4">
         <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">System</h2>
         <div class="grid grid-cols-2 gap-3 text-sm">
           <div>
             <p class="text-gray-400 text-xs">Uptime</p>
-            <p class="font-medium text-gray-900" x-text="d.system.uptime"></p>
+            <p class="font-medium text-gray-900" x-text="d.system.uptime || '—'"></p>
           </div>
           <div>
             <p class="text-gray-400 text-xs">Disk Free</p>
-            <p class="font-medium text-gray-900" x-text="d.system.diskFree"></p>
+            <p class="font-medium text-gray-900" x-text="d.system.diskFree || '—'"></p>
           </div>
           <div>
-            <p class="text-gray-400 text-xs">Gateway PID</p>
-            <p class="font-medium text-gray-900" x-text="d.system.gatewayPid"></p>
+            <p class="text-gray-400 text-xs">Gateway</p>
+            <p class="font-medium" :class="d.system.gatewayStatus === 'running' ? 'text-green-600' : 'text-red-600'" x-text="d.system.gatewayStatus || '—'"></p>
           </div>
-          <div>
-            <p class="text-gray-400 text-xs">Sessions</p>
-            <p class="font-medium text-gray-900" x-text="d.system.sessionCount"></p>
-          </div>
+          <template x-if="d.system.gatewayPid && d.system.gatewayStatus === 'running'">
+            <div>
+              <p class="text-gray-400 text-xs">Gateway PID</p>
+              <p class="font-medium text-gray-900" x-text="d.system.gatewayPid"></p>
+            </div>
+          </template>
         </div>
       </section>
 
     </main>
-
-    <!-- Error banner -->
-    <template x-if="error">
-      <div class="fixed bottom-4 left-4 right-4 max-w-2xl mx-auto bg-red-50 border border-red-200 text-accent text-sm rounded-lg px-4 py-2 text-center" x-text="error"></div>
-    </template>
-
   </div>
 
   <script>
@@ -164,56 +214,45 @@
       return {
         d: {
           timestamp: '',
-          costs: { today: 0, session: 0, dailyLimit: 1 },
-          sessions: { active: 0, list: [] },
-          emails: { unread: 0, oldest: '', items: [] },
+          costs: { totalUsd: 0, dailyLimit: 200, sessions: 0, stale: false, lastDate: null, error: null },
           deploys: [],
-          gastown: { daemon: '?', rigs: 0, lastBuild: '?' },
-          system: { uptime: '?', diskFree: '?', gatewayPid: '?', sessionCount: 0 }
+          emails: { count: 0, subjects: [], error: null },
+          gastown: { installed: false },
+          system: { uptime: null, diskFree: null, gatewayPid: null, gatewayStatus: 'down' }
         },
-        error: null,
+        offline: false,
+        isStale: false,
+        lastGoodTime: '—',
 
         async init() {
           await this.refresh();
-          setInterval(() => this.refresh(), 30000);
+          setInterval(() => this.refresh(), 60000);
         },
 
         async refresh() {
           try {
             const res = await fetch('status.json?t=' + Date.now());
-            if (!res.ok) throw new Error('Failed to load status.json');
+            if (!res.ok) throw new Error('fetch failed');
             this.d = await res.json();
-            this.error = null;
+            this.offline = false;
+            this.lastGoodTime = this.timeAgo(this.d.timestamp);
+            // Check staleness (>10 min)
+            const age = Date.now() - new Date(this.d.timestamp).getTime();
+            this.isStale = age > 10 * 60 * 1000;
           } catch (e) {
-            this.error = e.message;
+            this.offline = true;
           }
         },
 
         fmt(n) {
-          return n != null ? Number(n).toFixed(2) : '?';
+          return n != null ? Number(n).toFixed(2) : '—';
         },
 
-        costColor(today, limit) {
-          const pct = today / limit;
+        costColor() {
+          const pct = (this.d.costs.totalUsd || 0) / (this.d.costs.dailyLimit || 200);
           if (pct >= 0.8) return 'bg-red-500';
           if (pct >= 0.5) return 'bg-yellow-400';
           return 'bg-green-500';
-        },
-
-        deployIcon(dep) {
-          const code = dep.code || 0;
-          return (code >= 200 && code < 400) ? '✅' : '❌';
-        },
-
-        isOlderThan24h(oldest) {
-          if (!oldest) return false;
-          const m = oldest.match(/(\d+)([dhm])/);
-          if (!m) return false;
-          const val = parseInt(m[1]);
-          const unit = m[2];
-          if (unit === 'd' && val >= 1) return true;
-          if (unit === 'h' && val >= 24) return true;
-          return false;
         },
 
         timeAgo(ts) {

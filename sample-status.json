@@ -1,18 +1,33 @@
 {
   "timestamp": "2026-03-29T19:30:00Z",
-  "costs": {"today": 47.20, "session": 13.98, "dailyLimit": 200},
-  "sessions": {"active": 3, "list": [
-    {"channel": "#infrastructure", "turns": 42, "age": "2h"},
-    {"channel": "#main", "turns": 18, "age": "4h"},
-    {"channel": "#fhq-chat", "turns": 3, "age": "1d"}
-  ]},
-  "emails": {"unread": 5, "oldest": "2d ago", "items": ["CLN & Deck (2d)", "RE: CloudNC growth round (2d)", "RE: CloudNC (1d)", "Flat World Partners (1d)", "BNF Capital (1d)"]},
+  "costs": {
+    "totalUsd": 47.20,
+    "dailyLimit": 200,
+    "sessions": 5,
+    "stale": false,
+    "lastDate": null
+  },
   "deploys": [
-    {"name": "review.tycho.sh", "status": "up", "code": 302},
-    {"name": "deck.tycho.sh", "status": "up", "code": 302},
-    {"name": "outreach-v2.pages.dev", "status": "up", "code": 200},
-    {"name": "countingatoms.com", "status": "down", "code": 0}
+    {"name": "review.tycho.sh", "url": "https://review.tycho.sh", "code": 302, "status": "up"},
+    {"name": "deck.tycho.sh", "url": "https://deck.tycho.sh", "code": 302, "status": "up"},
+    {"name": "outreach-v2.pages.dev", "url": "https://outreach-v2.pages.dev", "code": 200, "status": "up"},
+    {"name": "tycho-dash.pages.dev", "url": "https://tycho-dash.pages.dev", "code": 200, "status": "up"},
+    {"name": "countingatoms.com", "url": "https://countingatoms.com", "code": 0, "status": "down"},
+    {"name": "themissingleap.com", "url": "https://themissingleap.com", "code": 0, "status": "down"}
   ],
-  "gastown": {"daemon": "stopped", "rigs": 1, "lastBuild": "Outreach V2 — 3 beads, 15 min"},
-  "system": {"uptime": "4d 12h", "diskFree": "100GB", "gatewayPid": 78965, "sessionCount": 14}
+  "emails": {
+    "count": 5,
+    "subjects": ["CLN & Deck (2d)", "RE: CloudNC growth round (2d)", "RE: CloudNC (1d)", "Flat World Partners (1d)", "BNF Capital (1d)"]
+  },
+  "gastown": {
+    "installed": true,
+    "rigs": 2,
+    "raw": "● dash (2 polecats)\n● longeye (1 polecat)"
+  },
+  "system": {
+    "uptime": "4d 12h",
+    "diskFree": "100Gi",
+    "gatewayPid": 78965,
+    "gatewayStatus": "running"
+  }
 }
