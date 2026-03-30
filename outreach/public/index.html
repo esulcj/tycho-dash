@@ -62,8 +62,21 @@
     <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm" x-text="error"></div>
   </div>
 
-  <!-- Pipeline View -->
+  <!-- Pipeline Status View -->
   <div x-show="page==='pipeline' && !loading" class="max-w-7xl mx-auto px-4 py-4 fade-in">
+    <!-- Summary Stats -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <template x-for="s in pipelineSummary()" :key="s.value">
+        <button @click="filterStatus = filterStatus === s.value ? '' : s.value"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+          :class="filterStatus === s.value ? 'border-accent bg-accent/5 text-accent' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'">
+          <span class="w-2 h-2 rounded-full" :class="s.dot"></span>
+          <span x-text="s.label"></span>
+          <span class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded-full text-[10px]" x-text="s.count"></span>
+        </button>
+      </template>
+    </div>
+
     <!-- Filters -->
     <div class="flex flex-wrap gap-2 mb-4">
       <select x-model="filterTier" class="border border-gray-300 rounded-md px-3 py-1.5 text-sm bg-white">
@@ -72,45 +85,78 @@
         <option value="B">Tier B</option>
         <option value="C">Tier C</option>
       </select>
-      <select x-model="filterStatus" class="border border-gray-300 rounded-md px-3 py-1.5 text-sm bg-white">
-        <option value="">All Statuses</option>
-        <template x-for="s in statuses" :key="s.value">
-          <option :value="s.value" x-text="s.label"></option>
-        </template>
-      </select>
       <input x-model="search" type="text" placeholder="Search firms..." class="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1 min-w-[150px]">
-      <span class="text-sm text-gray-500 self-center" x-text="filteredFirms().length + ' firms'"></span>
+      <span class="text-sm text-gray-500 self-center" x-text="sortedFilteredFirms().length + ' of ' + firms.length + ' firms'"></span>
     </div>
 
-    <!-- Firm Cards -->
-    <div class="grid gap-3">
-      <template x-for="firm in filteredFirms()" :key="firm.id">
-        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="font-semibold text-base truncate" x-text="firm.name"></h3>
+    <!-- Pipeline Table -->
+    <div class="bg-white border border-gray-200 rounded-lg overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900 select-none whitespace-nowrap" @click="sortBy('name')">
+              Firm <span class="text-gray-400 text-xs" x-text="sortIcon('name')"></span>
+            </th>
+            <th class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900 select-none whitespace-nowrap" @click="sortBy('contactName')">
+              Contact <span class="text-gray-400 text-xs" x-text="sortIcon('contactName')"></span>
+            </th>
+            <th class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900 select-none whitespace-nowrap" @click="sortBy('tier')">
+              Tier <span class="text-gray-400 text-xs" x-text="sortIcon('tier')"></span>
+            </th>
+            <th class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900 select-none whitespace-nowrap" @click="sortBy('status')">
+              Status <span class="text-gray-400 text-xs" x-text="sortIcon('status')"></span>
+            </th>
+            <th class="text-left px-3 py-2 font-medium text-gray-600 whitespace-nowrap">Next Step</th>
+            <th class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900 select-none whitespace-nowrap" @click="sortBy('lastActivity')">
+              Last Activity <span class="text-gray-400 text-xs" x-text="sortIcon('lastActivity')"></span>
+            </th>
+            <th class="text-left px-3 py-2 font-medium text-gray-600 whitespace-nowrap">Notes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <template x-for="firm in sortedFilteredFirms()" :key="firm.id">
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-3 py-2">
+                <div class="flex items-center gap-1.5">
+                  <button @click="openDetail(firm)" class="font-medium text-accent hover:underline truncate max-w-[180px]" x-text="firm.name"></button>
+                </div>
+              </td>
+              <td class="px-3 py-2 text-gray-600 truncate max-w-[140px]" x-text="firm.contactName"></td>
+              <td class="px-3 py-2">
                 <span class="text-xs px-2 py-0.5 rounded-full font-medium"
                   :class="firm.tier === 'A' ? 'bg-accent/10 text-accent' : firm.tier === 'B' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'"
-                  x-text="'Tier ' + firm.tier"></span>
-                <span class="text-xs px-2 py-0.5 rounded-full"
-                  :class="statusColor(firm.pipelineStatus)"
-                  x-text="statusLabel(firm.pipelineStatus)"></span>
-              </div>
-              <p class="text-sm text-gray-500 mt-0.5" x-text="firm.hq + ' · ' + firm.stage"></p>
-              <p class="text-sm text-gray-600 mt-1 line-clamp-2" x-text="firm.thesis"></p>
-            </div>
-            <div class="text-right shrink-0">
-              <div class="text-xs text-gray-400" x-text="'#' + firm.rank"></div>
-              <button @click="openDetail(firm)" class="text-accent text-sm hover:underline mt-1">View</button>
-            </div>
-          </div>
-          <div class="mt-2 flex items-center gap-3 text-xs text-gray-500">
-            <span x-text="firm.contactName"></span>
-            <span x-show="firm.quotes.length > 0" class="text-accent">● <span x-text="firm.quotes.length"></span> quotes</span>
-          </div>
-        </div>
-      </template>
+                  x-text="firm.tier"></span>
+              </td>
+              <td class="px-3 py-2">
+                <select
+                  :value="firm.pipelineStatus"
+                  @change="updatePipelineField(firm, 'pipelineStatus', $event.target.value)"
+                  class="text-xs border border-gray-200 rounded px-2 py-1 bg-white w-full min-w-[120px]"
+                  :class="statusColor(firm.pipelineStatus)">
+                  <template x-for="s in statuses" :key="s.value">
+                    <option :value="s.value" :selected="s.value === firm.pipelineStatus" x-text="s.label"></option>
+                  </template>
+                </select>
+              </td>
+              <td class="px-3 py-2">
+                <input type="text" :value="firm.nextStep || ''"
+                  @blur="updatePipelineField(firm, 'nextStep', $event.target.value)"
+                  @keydown.enter="$event.target.blur()"
+                  class="text-xs border border-gray-200 rounded px-2 py-1 w-full min-w-[120px]"
+                  placeholder="Next step...">
+              </td>
+              <td class="px-3 py-2 text-xs text-gray-500 whitespace-nowrap" x-text="firm.lastActivity || '—'"></td>
+              <td class="px-3 py-2">
+                <input type="text" :value="firm.pipelineNotes || ''"
+                  @blur="updatePipelineField(firm, 'pipelineNotes', $event.target.value)"
+                  @keydown.enter="$event.target.blur()"
+                  class="text-xs border border-gray-200 rounded px-2 py-1 w-full min-w-[100px]"
+                  placeholder="Notes...">
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -363,16 +409,21 @@ function app() {
 
     statuses: [
       { value: "not_started", label: "Not Started", dot: "bg-gray-300" },
-      { value: "researching", label: "Researching", dot: "bg-blue-400" },
-      { value: "drafting", label: "Drafting", dot: "bg-yellow-400" },
-      { value: "ready_to_send", label: "Ready to Send", dot: "bg-orange-400" },
-      { value: "sent", label: "Sent", dot: "bg-purple-400" },
-      { value: "replied", label: "Replied", dot: "bg-green-400" },
+      { value: "email_drafted", label: "Email Drafted", dot: "bg-yellow-400" },
+      { value: "email_sent", label: "Email Sent", dot: "bg-purple-400" },
+      { value: "responded", label: "Responded", dot: "bg-blue-400" },
       { value: "meeting_scheduled", label: "Meeting Scheduled", dot: "bg-accent" },
+      { value: "meeting_done", label: "Meeting Done", dot: "bg-green-400" },
+      { value: "follow_up", label: "Follow Up", dot: "bg-orange-400" },
+      { value: "passed", label: "Passed", dot: "bg-gray-400" },
+      { value: "closed", label: "Closed", dot: "bg-green-600" },
     ],
+    sortColumn: "rank",
+    sortDirection: "asc",
 
     async init() {
       await this.loadFirms();
+      this.loadPipelineData();
     },
 
     async loadFirms() {
@@ -395,6 +446,9 @@ function app() {
               emailDraft: f.emailDraft || "",
               userNotes: "",
               pipelineStatus: f.pipelineStatus || "not_started",
+              nextStep: "",
+              lastActivity: "",
+              pipelineNotes: "",
               quotes: [],
               quotesContact: "",
               archived: f.archived || false,
@@ -487,12 +541,14 @@ function app() {
     statusColor(status) {
       const colors = {
         not_started: "bg-gray-100 text-gray-600",
-        researching: "bg-blue-100 text-blue-700",
-        drafting: "bg-yellow-100 text-yellow-700",
-        ready_to_send: "bg-orange-100 text-orange-700",
-        sent: "bg-purple-100 text-purple-700",
-        replied: "bg-green-100 text-green-700",
+        email_drafted: "bg-yellow-100 text-yellow-700",
+        email_sent: "bg-purple-100 text-purple-700",
+        responded: "bg-blue-100 text-blue-700",
         meeting_scheduled: "bg-red-50 text-accent",
+        meeting_done: "bg-green-100 text-green-700",
+        follow_up: "bg-orange-100 text-orange-700",
+        passed: "bg-gray-200 text-gray-500",
+        closed: "bg-green-100 text-green-800",
       };
       return colors[status] || "bg-gray-100 text-gray-600";
     },
@@ -528,22 +584,114 @@ function app() {
     },
 
     async updateStatus(firm, newStatus) {
-      firm.pipelineStatus = newStatus;
+      this.updatePipelineField(firm, "pipelineStatus", newStatus);
       try {
-        const res = await fetch(`/api/firms/${firm.id}/status`, {
+        await fetch(`/api/firms/${firm.id}/status`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: newStatus }),
         });
-        if (res.ok) this.showToast("Status updated");
-      } catch (e) {
-        this.showToast("Update failed (offline mode)");
-      }
+      } catch (e) {}
     },
 
     showToast(msg) {
       this.toast = msg;
       setTimeout(() => this.toast = null, 2000);
+    },
+
+    migrateStatus(status) {
+      const map = { researching: "not_started", drafting: "email_drafted", ready_to_send: "email_drafted", sent: "email_sent", replied: "responded" };
+      return map[status] || status;
+    },
+
+    loadPipelineData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("pipeline_data") || "{}");
+        for (const firm of this.firms) {
+          const d = saved[firm.id];
+          if (d) {
+            firm.pipelineStatus = this.migrateStatus(d.status || firm.pipelineStatus);
+            firm.nextStep = d.nextStep || "";
+            firm.lastActivity = d.lastActivity || "";
+            firm.pipelineNotes = d.notes || "";
+          } else {
+            firm.pipelineStatus = this.migrateStatus(firm.pipelineStatus);
+          }
+        }
+      } catch (e) {}
+    },
+
+    savePipelineData() {
+      const data = {};
+      for (const firm of this.firms) {
+        data[firm.id] = {
+          status: firm.pipelineStatus,
+          nextStep: firm.nextStep || "",
+          lastActivity: firm.lastActivity || "",
+          notes: firm.pipelineNotes || "",
+        };
+      }
+      localStorage.setItem("pipeline_data", JSON.stringify(data));
+    },
+
+    updatePipelineField(firm, field, value) {
+      firm[field] = value;
+      if (field === "pipelineStatus") firm.lastActivity = new Date().toISOString().split("T")[0];
+      this.savePipelineData();
+      this.showToast("Saved");
+    },
+
+    sortBy(column) {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+      } else {
+        this.sortColumn = column;
+        this.sortDirection = "asc";
+      }
+    },
+
+    sortedFilteredFirms() {
+      let list = this.filteredFirms();
+      const col = this.sortColumn;
+      const dir = this.sortDirection === "asc" ? 1 : -1;
+      const statusOrder = this.statuses.map(s => s.value);
+      return [...list].sort((a, b) => {
+        let av, bv;
+        if (col === "status") {
+          av = statusOrder.indexOf(a.pipelineStatus);
+          bv = statusOrder.indexOf(b.pipelineStatus);
+        } else if (col === "rank") {
+          av = a.rank || 999;
+          bv = b.rank || 999;
+        } else if (col === "name") {
+          av = (a.name || "").toLowerCase();
+          bv = (b.name || "").toLowerCase();
+        } else if (col === "tier") {
+          av = a.tier || "Z";
+          bv = b.tier || "Z";
+        } else if (col === "lastActivity") {
+          av = a.lastActivity || "";
+          bv = b.lastActivity || "";
+        } else {
+          av = a[col] || "";
+          bv = b[col] || "";
+        }
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+    },
+
+    pipelineSummary() {
+      const counts = {};
+      for (const s of this.statuses) counts[s.value] = 0;
+      for (const f of this.firms) counts[f.pipelineStatus] = (counts[f.pipelineStatus] || 0) + 1;
+      return this.statuses.map(s => ({ ...s, count: counts[s.value] || 0 }));
+    },
+
+    sortIcon(column) {
+      if (this.sortColumn !== column) return "↕";
+      return this.sortDirection === "asc" ? "↑" : "↓";
     },
   };
 }
