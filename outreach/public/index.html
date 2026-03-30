@@ -4,7 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CloudNC Outreach</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    }
+    // Auto-resize all textareas on page load and Alpine init
+    document.addEventListener('alpine:initialized', () => {
+      setTimeout(() => {
+        document.querySelectorAll('textarea').forEach(el => autoResize(el));
+      }, 500);
+    });
+
+</script>
   <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script>
@@ -198,7 +210,7 @@
           <!-- Notes -->
           <div>
             <h4 class="text-sm font-semibold text-gray-800 mb-1">Notes</h4>
-            <textarea x-model="firm.userNotes" @blur="saveNotes(firm)" rows="3"
+            <textarea x-model="firm.userNotes" @blur="saveNotes(firm)" rows="3" x-init="$nextTick(() => autoResize($el))" @input="autoResize($el)"
               class="w-full border border-gray-200 rounded-md p-2 text-sm resize-y"
               placeholder="Add notes..."></textarea>
           </div>
@@ -227,7 +239,7 @@
         <textarea
           x-model="firm.emailDraft"
           @blur="saveEmail(firm)"
-          rows="8"
+          rows="12" style="min-height:200px" x-init="$nextTick(() => autoResize($el))" @input="autoResize($el)"
           class="w-full border border-gray-200 rounded-md p-3 text-sm font-mono resize-y"
           placeholder="Write email draft..."></textarea>
         <div class="flex items-center justify-between mt-1">
@@ -320,7 +332,7 @@
 
           <div class="mb-4">
             <label class="text-sm font-medium text-gray-700">Notes</label>
-            <textarea x-model="detail.userNotes" @blur="saveNotes(detail)" rows="3"
+            <textarea x-model="detail.userNotes" @blur="saveNotes(detail)" rows="3" x-init="$nextTick(() => autoResize($el))" @input="autoResize($el)"
               class="mt-1 w-full border border-gray-200 rounded-md p-2 text-sm resize-y"
               placeholder="Add notes..."></textarea>
           </div>
