@@ -22,6 +22,7 @@
     .fade-in { animation: fadeIn 0.15s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     textarea:focus, input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px #FD384E40; }
+    textarea.auto-resize { overflow: hidden; resize: none; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans min-w-[375px]">
@@ -139,63 +140,66 @@
         <!-- Expanded Content -->
         <div x-show="firm._expanded" x-collapse class="px-5 pb-5 border-t border-gray-100">
           <!-- Contact Info (compact inline) -->
-          <div class="mt-4 mb-5 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
-            <span class="font-medium text-gray-700" x-text="firm.contact"></span>
-            <span x-show="firm.contactEmail" class="text-gray-500" x-text="firm.contactEmail"></span>
-            <span x-show="firm.altContact" class="text-gray-500">Alt: <span x-text="firm.altContact"></span></span>
-            <span x-show="firm.altContactEmail" class="text-gray-500" x-text="firm.altContactEmail"></span>
+          <div class="mt-4 mb-5 bg-gray-50 rounded-lg px-4 py-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
+            <span class="font-medium text-gray-800" x-text="firm.contact"></span>
+            <span x-show="firm.contactEmail" class="text-accent/80" x-text="firm.contactEmail"></span>
+            <span x-show="firm.altContact" class="text-gray-500">Alt: <span class="font-medium" x-text="firm.altContact"></span></span>
+            <span x-show="firm.altContactEmail" class="text-accent/60" x-text="firm.altContactEmail"></span>
           </div>
 
           <!-- Person Dossier -->
-          <div x-show="firm.dossierPerson" class="mb-5">
-            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Person Dossier</h4>
-            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierPerson"></p>
+          <div x-show="firm.dossierPerson" class="mb-5 bg-white rounded-lg border border-gray-100 p-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 pl-3 border-l-2 border-accent">Person Dossier</h4>
+            <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed pl-3" x-text="firm.dossierPerson"></p>
           </div>
 
           <!-- Fund Dossier -->
-          <div x-show="firm.dossierFund" class="mb-5">
-            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Fund Dossier</h4>
-            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierFund"></p>
+          <div x-show="firm.dossierFund" class="mb-5 bg-white rounded-lg border border-gray-100 p-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 pl-3 border-l-2 border-accent">Fund Dossier</h4>
+            <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed pl-3" x-text="firm.dossierFund"></p>
           </div>
 
           <!-- Portfolio -->
-          <div x-show="firm.dossierPortfolio" class="mb-5">
-            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Portfolio</h4>
-            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierPortfolio"></p>
+          <div x-show="firm.dossierPortfolio" class="mb-5 bg-white rounded-lg border border-gray-100 p-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 pl-3 border-l-2 border-blue-300">Portfolio</h4>
+            <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed pl-3" x-text="firm.dossierPortfolio"></p>
           </div>
 
           <!-- Why They'd Care -->
-          <div x-show="firm.dossierWhyCare" class="mb-5">
-            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Why They'd Care</h4>
-            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierWhyCare"></p>
+          <div x-show="firm.dossierWhyCare" class="mb-5 bg-accent/[0.02] rounded-lg border border-accent/10 p-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-accent/70 mb-3 pl-3 border-l-2 border-accent">Why They'd Care</h4>
+            <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed pl-3" x-text="firm.dossierWhyCare"></p>
           </div>
 
           <!-- Shared Belief -->
-          <div x-show="firm.dossierSharedBelief" class="mb-5">
-            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Shared Belief</h4>
-            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierSharedBelief"></p>
+          <div x-show="firm.dossierSharedBelief" class="mb-5 bg-accent/[0.02] rounded-lg border border-accent/10 p-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-accent/70 mb-3 pl-3 border-l-2 border-accent">Shared Belief</h4>
+            <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed pl-3" x-text="firm.dossierSharedBelief"></p>
           </div>
 
           <!-- Quotes (pull-quote style) -->
           <div x-show="firm.quotes.length > 0" class="mb-5">
-            <h4 class="text-xs font-bold uppercase tracking-wide text-accent mb-3 pl-3 border-l-2 border-accent">In Their Own Words <span class="text-gray-400 font-normal normal-case tracking-normal" x-text="'(' + firm.quotesContact + ')'"></span></h4>
-            <template x-for="(q, qi) in firm.quotes" :key="qi">
-              <div class="border-l-2 border-gray-200 pl-4 py-2 mb-3">
-                <p class="italic text-gray-700 text-sm leading-relaxed" x-text="'\"' + q.text + '\"'"></p>
-                <p class="text-xs text-gray-400 mt-1.5">
-                  <span x-text="q.source"></span>
-                  <a x-show="q.url" :href="q.url" target="_blank" class="text-accent hover:underline ml-1">→ source</a>
-                </p>
-                <p x-show="q.relevance" class="text-xs text-gray-500 mt-1" x-text="q.relevance"></p>
-              </div>
-            </template>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-accent mb-4 pl-3 border-l-2 border-accent">In Their Own Words <span class="text-gray-400 font-normal normal-case tracking-normal" x-text="'(' + firm.quotesContact + ')'"></span></h4>
+            <div class="space-y-3">
+              <template x-for="(q, qi) in firm.quotes" :key="qi">
+                <div class="bg-gray-50 rounded-lg pl-4 pr-4 py-3 border-l-3 border-gray-300">
+                  <p class="italic text-gray-700 text-sm leading-relaxed" x-text="'\u201C' + q.text + '\u201D'"></p>
+                  <div class="flex items-center gap-2 mt-2">
+                    <span class="text-xs text-gray-400" x-text="q.source"></span>
+                    <a x-show="q.url" :href="q.url" target="_blank" class="text-xs text-accent hover:underline">→ source</a>
+                  </div>
+                  <p x-show="q.relevance" class="text-xs text-gray-500 mt-1.5 italic" x-text="q.relevance"></p>
+                </div>
+              </template>
+            </div>
           </div>
 
           <!-- Notes -->
           <div>
             <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Notes</h4>
-            <textarea x-model="firm.userNotes" @blur="saveNotes(firm)" rows="3"
-              class="w-full border border-gray-200 rounded-lg p-3 text-sm resize-y focus:border-accent/30"
+            <textarea x-model="firm.userNotes" @blur="saveNotes(firm)"
+              @input="autoResize($el)" x-init="$nextTick(() => autoResize($el))"
+              class="w-full border border-gray-200 rounded-lg p-3 text-sm auto-resize min-h-[80px] focus:border-accent/30"
               placeholder="Add notes..."></textarea>
           </div>
         </div>
@@ -204,7 +208,7 @@
   </div>
 
   <!-- Email Drafts View -->
-  <div x-show="page==='emails' && !loading" class="max-w-7xl mx-auto px-4 py-4 fade-in">
+  <div x-show="page==='emails' && !loading" x-effect="if (page==='emails') resizeAllTextareas()" class="max-w-7xl mx-auto px-4 py-4 fade-in">
     <div class="mb-4">
       <input x-model="emailSearch" type="text" placeholder="Search firms..." class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
     </div>
@@ -223,8 +227,9 @@
         <textarea
           x-model="firm.emailDraft"
           @blur="saveEmail(firm)"
-          rows="8"
-          class="w-full border border-gray-200 rounded-md p-3 text-sm font-mono resize-y"
+          @input="autoResize($el)"
+          x-init="$nextTick(() => autoResize($el))"
+          class="w-full border border-gray-200 rounded-md p-3 text-sm font-mono auto-resize min-h-[200px]"
           placeholder="Write email draft..."></textarea>
         <div class="flex items-center justify-between mt-1">
           <span class="text-xs text-gray-400" x-text="firm.emailDraft ? firm.emailDraft.length + ' chars' : 'Empty'"></span>
@@ -316,8 +321,9 @@
 
           <div class="mb-4">
             <label class="text-sm font-medium text-gray-700">Notes</label>
-            <textarea x-model="detail.userNotes" @blur="saveNotes(detail)" rows="3"
-              class="mt-1 w-full border border-gray-200 rounded-md p-2 text-sm resize-y"
+            <textarea x-model="detail.userNotes" @blur="saveNotes(detail)"
+              @input="autoResize($el)" x-init="$nextTick(() => autoResize($el))"
+              class="mt-1 w-full border border-gray-200 rounded-md p-2 text-sm auto-resize min-h-[80px]"
               placeholder="Add notes..."></textarea>
           </div>
         </div>
@@ -523,6 +529,20 @@ function app() {
       } catch (e) {
         this.showToast("Update failed (offline mode)");
       }
+    },
+
+    autoResize(el) {
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    },
+
+    resizeAllTextareas() {
+      this.$nextTick(() => {
+        document.querySelectorAll('textarea.auto-resize').forEach(el => {
+          this.autoResize(el);
+        });
+      });
     },
 
     showToast(msg) {
