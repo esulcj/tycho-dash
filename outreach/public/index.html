@@ -85,7 +85,12 @@
         <option value="C">Tier C</option>
       </select>
       <input x-model="search" type="text" placeholder="Search firms..." class="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1 min-w-[150px]">
-      <span class="text-sm text-gray-500 self-center" x-text="sortedFilteredFirms().length + ' of ' + firms.length + ' firms'"></span>
+      <button @click="showArchived = !showArchived"
+        class="text-xs px-3 py-1.5 rounded-md border transition-colors"
+        :class="showArchived ? 'border-accent text-accent bg-accent/5' : 'border-gray-300 text-gray-600 hover:bg-gray-100'">
+        <span x-text="showArchived ? 'Hide Archived (' + archivedCount() + ')' : 'Show Archived (' + archivedCount() + ')'"></span>
+      </button>
+      <span class="text-sm text-gray-500 self-center" x-text="sortedFilteredFirms().length + ' of ' + activeCount() + ' active'"></span>
     </div>
 
     <!-- Pipeline Table -->
@@ -110,11 +115,12 @@
               Last Activity <span class="text-gray-400 text-xs" x-text="sortIcon('lastActivity')"></span>
             </th>
             <th class="text-left px-3 py-2 font-medium text-gray-600 whitespace-nowrap">Notes</th>
+            <th class="px-3 py-2 w-8"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
           <template x-for="firm in sortedFilteredFirms()" :key="firm.id">
-            <tr class="hover:bg-gray-50 transition-colors">
+            <tr class="hover:bg-gray-50 transition-colors" :class="firm.archived ? 'opacity-50' : ''">
               <td class="px-3 py-2">
                 <div class="flex items-center gap-1.5">
                   <button @click="openDetail(firm)" class="font-medium text-accent hover:underline truncate max-w-[180px]" x-text="firm.name"></button>
@@ -151,6 +157,12 @@
                   @keydown.enter="$event.target.blur()"
                   class="text-xs border border-gray-200 rounded px-2 py-1 w-full min-w-[100px]"
                   placeholder="Notes...">
+              </td>
+              <td class="px-3 py-2">
+                <button @click="toggleArchive(firm)"
+                  class="text-xs px-2 py-1 rounded border transition-colors whitespace-nowrap"
+                  :class="firm.archived ? 'border-green-300 text-green-600 hover:bg-green-50' : 'border-gray-300 text-gray-500 hover:bg-gray-100'"
+                  x-text="firm.archived ? 'Unarchive' : 'Archive'"></button>
               </td>
             </tr>
           </template>
@@ -266,20 +278,32 @@
 
   <!-- Email Drafts View -->
   <div x-show="page==='emails' && !loading" class="max-w-7xl mx-auto px-4 py-4 fade-in">
-    <div class="mb-4">
-      <input x-model="emailSearch" type="text" placeholder="Search firms..." class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+    <div class="flex flex-wrap gap-2 mb-4 items-center">
+      <input x-model="emailSearch" type="text" placeholder="Search firms..." class="flex-1 min-w-[200px] border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+      <button @click="showArchived = !showArchived"
+        class="text-xs px-3 py-1.5 rounded-md border transition-colors"
+        :class="showArchived ? 'border-accent text-accent bg-accent/5' : 'border-gray-300 text-gray-600 hover:bg-gray-100'">
+        <span x-text="showArchived ? 'Hide Archived (' + archivedCount() + ')' : 'Show Archived (' + archivedCount() + ')'"></span>
+      </button>
+      <span class="text-sm text-gray-500" x-text="emailFirms().length + ' firms'"></span>
     </div>
 
     <template x-for="firm in emailFirms()" :key="firm.id">
-      <div class="bg-white border border-gray-200 rounded-lg p-4 mb-3">
+      <div class="bg-white border border-gray-200 rounded-lg p-4 mb-3 transition-opacity" :class="firm.archived ? 'opacity-50' : ''">
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
             <h3 class="font-semibold" x-text="firm.name"></h3>
             <span class="text-xs text-gray-500" x-text="firm.contactName + ' · ' + firm.contactEmail"></span>
           </div>
-          <span class="text-xs px-2 py-0.5 rounded-full"
-            :class="statusColor(firm.pipelineStatus)"
-            x-text="statusLabel(firm.pipelineStatus)"></span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs px-2 py-0.5 rounded-full"
+              :class="statusColor(firm.pipelineStatus)"
+              x-text="statusLabel(firm.pipelineStatus)"></span>
+            <button @click="toggleArchive(firm)"
+              class="text-xs px-2 py-1 rounded border transition-colors"
+              :class="firm.archived ? 'border-green-300 text-green-600 hover:bg-green-50' : 'border-gray-300 text-gray-500 hover:bg-gray-100'"
+              x-text="firm.archived ? 'Unarchive' : 'Archive'"></button>
+          </div>
         </div>
         <textarea
           x-model="firm.emailDraft"
@@ -423,6 +447,7 @@ function app() {
     async init() {
       await this.loadFirms();
       this.loadPipelineData();
+      this.loadArchiveData();
     },
 
     async loadFirms() {
@@ -479,6 +504,7 @@ function app() {
 
     filteredFirms() {
       return this.firms.filter(f => {
+        if (!this.showArchived && f.archived) return false;
         if (this.filterTier && f.tier !== this.filterTier) return false;
         if (this.filterStatus && f.pipelineStatus !== this.filterStatus) return false;
         if (this.search) {
@@ -515,21 +541,36 @@ function app() {
 
     toggleArchive(firm) {
       firm.archived = !firm.archived;
+      this.saveArchiveData();
+      this.showToast(firm.archived ? "Archived" : "Unarchived");
+    },
+
+    loadArchiveData() {
       try {
-        fetch(`/api/firms/${firm.id}/archive`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ archived: firm.archived }),
-        }).then(res => {
-          if (res.ok) this.showToast(firm.archived ? "Archived" : "Unarchived");
-        });
-      } catch (e) {
-        this.showToast("Archive toggle saved locally");
+        const saved = JSON.parse(localStorage.getItem("archive_data") || "{}");
+        for (const firm of this.firms) {
+          if (saved[firm.id] !== undefined) firm.archived = saved[firm.id];
+        }
+      } catch (e) {}
+    },
+
+    saveArchiveData() {
+      const data = {};
+      for (const firm of this.firms) {
+        if (firm.archived) data[firm.id] = true;
       }
+      localStorage.setItem("archive_data", JSON.stringify(data));
+    },
+
+    activeCount() {
+      return this.firms.filter(f => !f.archived).length;
     },
 
     firmsInStage(status) {
-      return this.firms.filter(f => f.pipelineStatus === status);
+      return this.firms.filter(f => {
+        if (!this.showArchived && f.archived) return false;
+        return f.pipelineStatus === status;
+      });
     },
 
     statusLabel(status) {
@@ -684,7 +725,8 @@ function app() {
     pipelineSummary() {
       const counts = {};
       for (const s of this.statuses) counts[s.value] = 0;
-      for (const f of this.firms) counts[f.pipelineStatus] = (counts[f.pipelineStatus] || 0) + 1;
+      const list = this.showArchived ? this.firms : this.firms.filter(f => !f.archived);
+      for (const f of list) counts[f.pipelineStatus] = (counts[f.pipelineStatus] || 0) + 1;
       return this.statuses.map(s => ({ ...s, count: counts[s.value] || 0 }));
     },
 
