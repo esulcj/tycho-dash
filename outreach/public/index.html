@@ -299,6 +299,10 @@
             <span class="text-xs px-2 py-0.5 rounded-full"
               :class="statusColor(firm.pipelineStatus)"
               x-text="statusLabel(firm.pipelineStatus)"></span>
+            <button @click="copyEmail(firm, $event)"
+              class="text-xs px-2 py-1 rounded border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors">
+              Copy
+            </button>
             <button @click="toggleArchive(firm)"
               class="text-xs px-2 py-1 rounded border transition-colors"
               :class="firm.archived ? 'border-green-300 text-green-600 hover:bg-green-50' : 'border-gray-300 text-gray-500 hover:bg-gray-100'"
@@ -595,6 +599,25 @@ function app() {
 
     openDetail(firm) {
       this.detail = firm;
+    },
+
+    async copyEmail(firm, event) {
+      const text = firm.emailDraft || "";
+      if (!text) { this.showToast("Nothing to copy"); return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = event.target;
+        btn.textContent = "Copied!";
+        btn.classList.add("text-green-600", "border-green-300");
+        btn.classList.remove("text-gray-500", "border-gray-300");
+        setTimeout(() => {
+          btn.textContent = "Copy";
+          btn.classList.remove("text-green-600", "border-green-300");
+          btn.classList.add("text-gray-500", "border-gray-300");
+        }, 1500);
+      } catch (e) {
+        this.showToast("Copy failed");
+      }
     },
 
     async saveEmail(firm) {
