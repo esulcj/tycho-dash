@@ -1,0 +1,7 @@
+name = "outreach-tool"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "public"
+
+[[kv_namespaces]]
+binding = "OUTREACH_KV"
+id = "1fee7c302a71424a9ac61b9fa1120931"

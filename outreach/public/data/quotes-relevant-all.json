@@ -1,0 +1,343 @@
+[
+  {
+    "firmName": "Eclipse Ventures",
+    "contactName": "Lior Susan",
+    "quotes": [
+      {
+        "text": "We are seeing a perfect storm that I personally and the team at Eclipse believes will finally digitize physical industries.",
+        "source": "Eclipse blog - Redefining Physical Industries",
+        "url": "https://eclipse.capital/blog/lior-susan-eclipse-redefining-physical-industries/",
+        "relevance": "Direct thesis alignment - Eclipse's core belief in digitizing physical industries maps exactly to CloudNC's mission of digitizing CNC manufacturing"
+      },
+      {
+        "text": "Whether it's chemicals, beverages, food or electronics, humans should not be manufacturing things. We can do much greater things for the world than putting things together.",
+        "source": "Mission North interview",
+        "url": "https://www.missionnorth.com/dispatches/lior-susan-at-eclipse-ventures-on-how-the-u-s-could-regain-its-manufacturing-and-supply-chain-prowess",
+        "relevance": "Vision of full automation in manufacturing directly supports CloudNC's AI-driven CAM automation thesis"
+      },
+      {
+        "text": "Manufacturing is a much more dangerous weapon than an F-35 combat aircraft. If China decided to halt U.S. food production or medical device production or semiconductor production, they would hurt us much more than if they had a lot of F-35s.",
+        "source": "Mission North interview",
+        "url": "https://www.missionnorth.com/dispatches/lior-susan-at-eclipse-ventures-on-how-the-u-s-could-regain-its-manufacturing-and-supply-chain-prowess",
+        "relevance": "Manufacturing as national security - supports CloudNC's defense manufacturing angle with Lockheed/In-Q-Tel"
+      }
+    ]
+  },
+  {
+    "firmName": "Eclipse Ventures",
+    "contactName": "Greg Reichow",
+    "quotes": []
+  },
+  {
+    "firmName": "Construct Capital",
+    "contactName": "Dayna Grayson",
+    "quotes": [
+      {
+        "text": "Sectors from manufacturing and supply chain to food and mobility drive half our economy's GDP yet are failing to meet customer expectations.",
+        "source": "Construct Capital / Crunchbase",
+        "url": "https://www.crunchbase.com/person/dayna-grayson",
+        "relevance": "Dayna's core thesis that manufacturing drives GDP but is failing - exactly CloudNC's opportunity to transform it"
+      }
+    ]
+  },
+  {
+    "firmName": "Lux Capital",
+    "contactName": "Josh Wolfe",
+    "quotes": [
+      {
+        "text": "There is no secret James Bond vault with cutting-edge technologies made by Q. There is no real life Stark Industries... You have a bureaucratic, sclerotic oligopolistic industry structure with four or five defense primes.",
+        "source": "Annie Duke Substack - A Contrarian's Guide to Venture Capital",
+        "url": "https://annieduke.substack.com/p/a-contrarians-guide-to-venture-capital",
+        "relevance": "Josh's critique of the legacy defense industry supports CloudNC's disruption narrative - startups bringing innovation where primes have stagnated"
+      }
+    ]
+  },
+  {
+    "firmName": "Lux Capital",
+    "contactName": "Peter Hébert",
+    "quotes": []
+  },
+  {
+    "firmName": "Lux Capital",
+    "contactName": "Bilal Zuberi",
+    "quotes": []
+  },
+  {
+    "firmName": "General Catalyst",
+    "contactName": "Hemant Taneja",
+    "quotes": [
+      {
+        "text": "What does that mean for doing it in defense? What does that mean for doing it in manufacturing? You probably saw that we invested in rebuilding manufacturing in the U.S. We're thinking about manufacturing from a global perspective.",
+        "source": "Fortune interview",
+        "url": "https://fortune.com/2024/10/25/general-catalysts-hemant-taneja-on-ai-lps-and-raising-around-8-billion/",
+        "relevance": "GC CEO explicitly stating manufacturing rebuild as investment thesis - shows top-down conviction"
+      },
+      {
+        "text": "Reindustrialization necessitates modernizing our industrial operations and maintenance.",
+        "source": "LinkedIn",
+        "url": "https://www.linkedin.com/in/hemanttaneja/",
+        "relevance": "Direct reindustrialization thesis - CloudNC modernizes the most fundamental industrial operation"
+      }
+    ]
+  },
+  {
+    "firmName": "General Catalyst",
+    "contactName": "Deep Nishar",
+    "quotes": []
+  },
+  {
+    "firmName": "Andreessen Horowitz",
+    "contactName": "Katherine Boyle",
+    "quotes": [
+      {
+        "text": "I believe the only way to reverse the course of stagnation and kick-start nationwide renewal post-Covid is through technologists building companies that support the national interest.",
+        "source": "New York Times / a16z 'Building American Dynamism' essay",
+        "url": "https://a16z.com/building-american-dynamism/",
+        "relevance": "Core American Dynamism thesis - CloudNC's defense manufacturing work with Lockheed/In-Q-Tel is exactly this"
+      }
+    ]
+  },
+  {
+    "firmName": "Andreessen Horowitz",
+    "contactName": "David Ulevitch",
+    "quotes": [
+      {
+        "text": "Onshoring manufacturing, deploying AI, and scaling energy aren't about job creation or gas prices. They're about national survival in an age of geopolitical volatility.",
+        "source": "a16z - Investing Capital to Defend the Nation",
+        "url": "https://a16z.com/investing-capital-to-defend-the-nation/",
+        "relevance": "Perfect framing for CloudNC's pitch - AI-powered manufacturing onshoring as national security imperative"
+      }
+    ]
+  },
+  {
+    "firmName": "Founders Fund",
+    "contactName": "Trae Stephens",
+    "quotes": [
+      {
+        "text": "The nation's ability to build physical things is a critical deterrent and economic engine.",
+        "source": "VCSheet profile / interviews",
+        "url": "https://www.vcsheet.com/who/trae-stephens",
+        "relevance": "Trae's personal conviction about physical manufacturing as national strength - CloudNC enables exactly this"
+      }
+    ]
+  },
+  {
+    "firmName": "Founders Fund",
+    "contactName": "Delian Asparouhov",
+    "quotes": []
+  },
+  {
+    "firmName": "DCVC",
+    "contactName": "Matt Ocko",
+    "quotes": []
+  },
+  {
+    "firmName": "DCVC",
+    "contactName": "Zachary Bogue",
+    "quotes": []
+  },
+  {
+    "firmName": "Khosla Ventures",
+    "contactName": "Vinod Khosla",
+    "quotes": [
+      {
+        "text": "AI could help optimize the use of resources (natural, raw, and otherwise), reducing waste and improving the efficiency of industries such as agriculture, manufacturing, and energy.",
+        "source": "Khosla Ventures blog - AI: Dystopia or Utopia?",
+        "url": "https://www.khoslaventures.com/posts/ai-dystopia-or-utopia",
+        "relevance": "Vinod explicitly calling out AI's potential to improve manufacturing efficiency - CloudNC is the proof"
+      },
+      {
+        "text": "Robotics, trailing cognitive AI by a few years, could further automate physical work across industries.",
+        "source": "MoneyControl interview",
+        "url": "https://www.moneycontrol.com/news/business/ai-may-almost-completely-replace-it-bpo-firms-disrupt-white-collar-jobs-vinod-khosla-13829250.html",
+        "relevance": "Vinod's view that AI will automate physical industries - CloudNC bridges the gap between cognitive AI and shop floor"
+      }
+    ]
+  },
+  {
+    "firmName": "SoftBank Vision Fund",
+    "contactName": "Max Ohrstrand",
+    "quotes": [
+      {
+        "text": "In Peak we have a partner with a shared vision that the future enterprise will run on a centralised AI software platform capable of optimising entire value chains.",
+        "source": "BusinessCloud - Peak CEO reveals vision as SoftBank backs AI firm",
+        "url": "https://businesscloud.co.uk/news/peak-ceo-reveals-vision-as-softbank-backs-ai-firm/",
+        "relevance": "Max's stated belief in AI platforms optimizing value chains - CloudNC optimizes the CNC manufacturing value chain"
+      }
+    ]
+  },
+  {
+    "firmName": "SoftBank",
+    "contactName": "Masayoshi Son",
+    "quotes": [
+      {
+        "text": "SoftBank founder is pursuing 'Project Crystal Land,' a plan to build a trillion-dollar AI and robotics manufacturing hub in Arizona.",
+        "source": "CNBC TV18 / Bloomberg",
+        "url": "https://www.bloomberg.com/news/articles/2025-06-20/masayoshi-son-s-next-bet-a-1-trillion-ai-robotics-hub-in-arizona",
+        "relevance": "Masa betting $1T on AI manufacturing in America - shows SoftBank's massive conviction in AI-powered manufacturing"
+      }
+    ]
+  },
+  {
+    "firmName": "Harpoon Ventures",
+    "contactName": "Larsen Jensen",
+    "quotes": []
+  },
+  {
+    "firmName": "Shield Capital",
+    "contactName": "Raj Shah",
+    "quotes": []
+  },
+  {
+    "firmName": "AE Industrial Partners",
+    "contactName": "Kirk Konert",
+    "quotes": []
+  },
+  {
+    "firmName": "Root Ventures",
+    "contactName": "Avidan Ross",
+    "quotes": []
+  },
+  {
+    "firmName": "Root Ventures",
+    "contactName": "Lee Edwards",
+    "quotes": []
+  },
+  {
+    "firmName": "Addition",
+    "contactName": "Lee Fixel",
+    "quotes": []
+  },
+  {
+    "firmName": "Razor's Edge Ventures",
+    "contactName": "Todd Stottlemyer",
+    "quotes": []
+  },
+  {
+    "firmName": "Bond Capital",
+    "contactName": "Mary Meeker",
+    "quotes": []
+  },
+  {
+    "firmName": "Construct Capital",
+    "contactName": "Rachel Holt",
+    "quotes": []
+  },
+  {
+    "firmName": "Drive Capital",
+    "contactName": "Mark Kvamme",
+    "quotes": []
+  },
+  {
+    "firmName": "Bedrock Capital",
+    "contactName": "Geoff Lewis",
+    "quotes": []
+  },
+  {
+    "firmName": "Tribe Capital",
+    "contactName": "Arjun Sethi",
+    "quotes": []
+  },
+  {
+    "firmName": "Foundry Group",
+    "contactName": "Brad Feld",
+    "quotes": []
+  },
+  {
+    "firmName": "Meritech Capital",
+    "contactName": "Paul Madera",
+    "quotes": [
+      {
+        "text": "If we want industrial strength and AI infrastructure here, fund flows, permitting, inspections, and procurement must be reliable.",
+        "source": "LinkedIn post",
+        "url": "https://www.linkedin.com/in/paulmadera/",
+        "relevance": "Paul's focus on industrial strength and AI infrastructure in the US - manufacturing reliability is CloudNC's domain"
+      }
+    ]
+  },
+  {
+    "firmName": "Sequoia Capital",
+    "contactName": "Bogomil Balkansky",
+    "quotes": []
+  },
+  {
+    "firmName": "Emergence Capital",
+    "contactName": "Jason Green",
+    "quotes": []
+  },
+  {
+    "firmName": "Emergence Capital",
+    "contactName": "Jake Saper",
+    "quotes": []
+  },
+  {
+    "firmName": "Index Ventures",
+    "contactName": "Mike Volpi",
+    "quotes": []
+  },
+  {
+    "firmName": "Kleiner Perkins",
+    "contactName": "Mamoon Hamid",
+    "quotes": []
+  },
+  {
+    "firmName": "Spark Capital",
+    "contactName": "Nabeel Hyatt",
+    "quotes": []
+  },
+  {
+    "firmName": "Upfront Ventures",
+    "contactName": "Mark Suster",
+    "quotes": []
+  },
+  {
+    "firmName": "Fifth Wall",
+    "contactName": "Brendan Wallace",
+    "quotes": []
+  },
+  {
+    "firmName": "Altimeter Capital",
+    "contactName": "Brad Gerstner",
+    "quotes": []
+  },
+  {
+    "firmName": "Energize Capital",
+    "contactName": "John Tough",
+    "quotes": []
+  },
+  {
+    "firmName": "Theory Ventures",
+    "contactName": "Tomasz Tunguz",
+    "quotes": []
+  },
+  {
+    "firmName": "Pioneer Fund",
+    "contactName": "Daniel Gross",
+    "quotes": []
+  },
+  {
+    "firmName": "75 & Sunny",
+    "contactName": "Spencer Rascoff",
+    "quotes": []
+  },
+  {
+    "firmName": "Renovus Capital",
+    "contactName": "Dylan Steele",
+    "quotes": []
+  },
+  {
+    "firmName": "TPG",
+    "contactName": "Jon Winkelried",
+    "quotes": []
+  },
+  {
+    "firmName": "Arch Venture Partners",
+    "contactName": "Steven Mollenkopf",
+    "quotes": []
+  },
+  {
+    "firmName": "XN LP",
+    "contactName": "Matt Bruso",
+    "quotes": []
+  }
+]
