@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gas Town Memories</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['system-ui', 'sans-serif'] },
+          colors: { accent: '#FD384E' }
+        }
+      }
+    }
+  </script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-white min-w-[375px]">
+  <div x-cloak x-data="memoryViewer()" x-init="init()">
+
+    <!-- Offline banner -->
+    <template x-if="error">
+      <div class="fixed top-0 left-0 right-0 z-50 bg-amber-50 border-b border-amber-300 text-amber-800 text-sm text-center px-4 py-2">
+        Could not load memories
+      </div>
+    </template>
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10" :class="error ? 'mt-10' : ''">
+      <div class="max-w-2xl mx-auto flex items-center justify-between">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900">Gas Town Memories</h1>
+          <p class="text-xs text-gray-400" x-show="d.count > 0" x-text="d.count + ' memories'"></p>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-gray-400">
+          <span x-show="d.timestamp" x-text="'Updated ' + timeAgo(d.timestamp)"></span>
+          <button @click="load()" class="p-1 hover:text-gray-600" title="Refresh">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter tabs -->
+    <div class="max-w-2xl mx-auto px-4 pt-3">
+      <div class="flex gap-2 overflow-x-auto text-xs">
+        <button
+          @click="filter = 'all'"
+          :class="filter === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+          class="px-3 py-1.5 rounded-full whitespace-nowrap transition-colors">
+          All
+        </button>
+        <template x-for="t in types" :key="t">
+          <button
+            @click="filter = t"
+            :class="filter === t ? typeColor(t).active : typeColor(t).inactive"
+            class="px-3 py-1.5 rounded-full whitespace-nowrap transition-colors"
+            x-text="t">
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <main class="max-w-2xl mx-auto px-4 py-4 space-y-3">
+
+      <!-- Empty state -->
+      <template x-if="!error && filtered().length === 0">
+        <div class="text-center py-12 text-gray-400">
+          <p class="text-sm" x-text="filter === 'all' ? 'No memories stored yet.' : 'No ' + filter + ' memories.'"></p>
+          <p class="text-xs mt-1">Use <code class="bg-gray-100 px-1 py-0.5 rounded">gt remember "insight"</code> to add one.</p>
+        </div>
+      </template>
+
+      <!-- Memory cards -->
+      <template x-for="m in filtered()" :key="m.key">
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="text-sm text-gray-900" x-text="m.value"></p>
+              <p class="text-xs text-gray-400 mt-1 truncate" x-text="m.key"></p>
+            </div>
+            <span
+              class="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full"
+              :class="typeColor(m.type).badge"
+              x-text="m.type">
+            </span>
+          </div>
+        </div>
+      </template>
+
+    </main>
+  </div>
+
+  <script>
+    function memoryViewer() {
+      return {
+        d: { timestamp: null, count: 0, memories: [] },
+        error: false,
+        filter: 'all',
+        types: ['feedback', 'user', 'project', 'reference', 'general'],
+
+        async init() {
+          await this.load();
+        },
+
+        async load() {
+          try {
+            const res = await fetch('memories.json');
+            if (!res.ok) throw new Error('fetch failed');
+            this.d = await res.json();
+            this.error = false;
+          } catch {
+            this.error = true;
+          }
+        },
+
+        filtered() {
+          if (this.filter === 'all') return this.d.memories;
+          return this.d.memories.filter(m => m.type === this.filter);
+        },
+
+        typeColor(t) {
+          const colors = {
+            feedback: {
+              active: 'bg-blue-600 text-white',
+              inactive: 'bg-blue-50 text-blue-700 hover:bg-blue-100',
+              badge: 'bg-blue-50 text-blue-700'
+            },
+            user: {
+              active: 'bg-purple-600 text-white',
+              inactive: 'bg-purple-50 text-purple-700 hover:bg-purple-100',
+              badge: 'bg-purple-50 text-purple-700'
+            },
+            project: {
+              active: 'bg-green-600 text-white',
+              inactive: 'bg-green-50 text-green-700 hover:bg-green-100',
+              badge: 'bg-green-50 text-green-700'
+            },
+            reference: {
+              active: 'bg-amber-600 text-white',
+              inactive: 'bg-amber-50 text-amber-700 hover:bg-amber-100',
+              badge: 'bg-amber-50 text-amber-700'
+            },
+            general: {
+              active: 'bg-gray-700 text-white',
+              inactive: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+              badge: 'bg-gray-100 text-gray-600'
+            }
+          };
+          return colors[t] || colors.general;
+        },
+
+        timeAgo(ts) {
+          if (!ts) return 'never';
+          const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+          if (diff < 60) return 'just now';
+          if (diff < 3600) return Math.floor(diff / 60) + 'min ago';
+          if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+          return Math.floor(diff / 86400) + 'd ago';
+        }
+      };
+    }
+  </script>
+</body>
+</html>

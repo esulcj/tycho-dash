@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-03-30T06:01:38Z",
+  "count": 5,
+  "memories": [
+    {
+      "key": "always-run-lint-before-committing",
+      "value": "Always run lint before committing code changes",
+      "type": "feedback"
+    },
+    {
+      "key": "prefers-minimal-ui-with-systemui",
+      "value": "Prefers minimal UI with system-ui fonts",
+      "type": "user"
+    },
+    {
+      "key": "dashboard-v2-migration-in-progress",
+      "value": "Dashboard v2 migration in progress - target date 2026-04-15",
+      "type": "project"
+    },
+    {
+      "key": "deploy-docs-at-httpsdocstychoshdeploys",
+      "value": "Deploy docs at https://docs.tycho.sh/deploys",
+      "type": "reference"
+    },
+    {
+      "key": "the-refinery-merges-prs-after",
+      "value": "The Refinery merges PRs after Witness verification",
+      "type": "general"
+    }
+  ]
+}
