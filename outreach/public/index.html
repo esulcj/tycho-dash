@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudNC Outreach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { accent: '#FD384E' },
+          fontFamily: { sans: ['system-ui', '-apple-system', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .fade-in { animation: fadeIn 0.15s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    textarea:focus, input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px #FD384E40; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-w-[375px]">
+
+<div x-data="app()" x-cloak class="min-h-screen">
+  <!-- Nav -->
+  <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-lg font-bold text-accent">CloudNC Outreach</h1>
+      <div class="flex gap-1 text-sm">
+        <button @click="page='pipeline'" :class="page==='pipeline' ? 'bg-accent text-white' : 'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-md transition-colors">Pipeline</button>
+        <button @click="page='research'" :class="page==='research' ? 'bg-accent text-white' : 'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-md transition-colors">Research</button>
+        <button @click="page='emails'" :class="page==='emails' ? 'bg-accent text-white' : 'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-md transition-colors">Emails</button>
+        <button @click="page='viz'" :class="page==='viz' ? 'bg-accent text-white' : 'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-md transition-colors">Viz</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Loading -->
+  <div x-show="loading" class="flex items-center justify-center py-20">
+    <div class="text-gray-400">Loading firms...</div>
+  </div>
+
+  <!-- Error -->
+  <div x-show="error" class="max-w-7xl mx-auto px-4 py-4">
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm" x-text="error"></div>
+  </div>
+
+  <!-- Pipeline View -->
+  <div x-show="page==='pipeline' && !loading" class="max-w-7xl mx-auto px-4 py-4 fade-in">
+    <!-- Filters -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <select x-model="filterTier" class="border border-gray-300 rounded-md px-3 py-1.5 text-sm bg-white">
+        <option value="">All Tiers</option>
+        <option value="A">Tier A</option>
+        <option value="B">Tier B</option>
+        <option value="C">Tier C</option>
+      </select>
+      <select x-model="filterStatus" class="border border-gray-300 rounded-md px-3 py-1.5 text-sm bg-white">
+        <option value="">All Statuses</option>
+        <template x-for="s in statuses" :key="s.value">
+          <option :value="s.value" x-text="s.label"></option>
+        </template>
+      </select>
+      <input x-model="search" type="text" placeholder="Search firms..." class="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1 min-w-[150px]">
+      <span class="text-sm text-gray-500 self-center" x-text="filteredFirms().length + ' firms'"></span>
+    </div>
+
+    <!-- Firm Cards -->
+    <div class="grid gap-3">
+      <template x-for="firm in filteredFirms()" :key="firm.id">
+        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-semibold text-base truncate" x-text="firm.name"></h3>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium"
+                  :class="firm.tier === 'A' ? 'bg-accent/10 text-accent' : firm.tier === 'B' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'"
+                  x-text="'Tier ' + firm.tier"></span>
+                <span class="text-xs px-2 py-0.5 rounded-full"
+                  :class="statusColor(firm.pipelineStatus)"
+                  x-text="statusLabel(firm.pipelineStatus)"></span>
+              </div>
+              <p class="text-sm text-gray-500 mt-0.5" x-text="firm.hq + ' · ' + firm.stage"></p>
+              <p class="text-sm text-gray-600 mt-1 line-clamp-2" x-text="firm.thesis"></p>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-xs text-gray-400" x-text="'#' + firm.rank"></div>
+              <button @click="openDetail(firm)" class="text-accent text-sm hover:underline mt-1">View</button>
+            </div>
+          </div>
+          <div class="mt-2 flex items-center gap-3 text-xs text-gray-500">
+            <span x-text="firm.contactName"></span>
+            <span x-show="firm.quotes.length > 0" class="text-accent">● <span x-text="firm.quotes.length"></span> quotes</span>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Research View -->
+  <div x-show="page==='research' && !loading" class="max-w-7xl mx-auto px-4 py-4 fade-in">
+    <div class="flex flex-wrap gap-2 mb-4 items-center">
+      <input x-model="researchSearch" type="text" placeholder="Search firms for research..." class="flex-1 min-w-[200px] border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+      <button @click="showArchived = !showArchived"
+        class="text-xs px-3 py-1.5 rounded-md border transition-colors"
+        :class="showArchived ? 'border-accent text-accent bg-accent/5' : 'border-gray-300 text-gray-600 hover:bg-gray-100'">
+        <span x-text="showArchived ? 'Hide Archived (' + archivedCount() + ')' : 'Show Archived (' + archivedCount() + ')'"></span>
+      </button>
+      <span class="text-sm text-gray-500" x-text="researchFirms().length + ' firms'"></span>
+    </div>
+
+    <template x-for="firm in researchFirms()" :key="firm.id">
+      <div class="bg-white border border-gray-200 rounded-xl mb-4 shadow-sm transition-all" :class="firm.archived ? 'opacity-40' : 'hover:shadow-md'">
+        <!-- Collapsed Header -->
+        <div class="flex items-center gap-3 px-5 py-3.5 cursor-pointer select-none" @click="firm._expanded = !firm._expanded">
+          <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-150" :class="firm._expanded ? 'rotate-90' : ''" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+          </svg>
+          <h3 class="font-bold text-sm truncate" x-text="firm.name"></h3>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
+            :class="firm.tier === 'A' ? 'bg-accent/10 text-accent' : firm.tier === 'B' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'"
+            x-text="'Tier ' + firm.tier"></span>
+          <span class="text-xs text-gray-500 truncate" x-text="firm.contactName"></span>
+          <span x-show="firm.quotes.length > 0" class="text-xs text-accent shrink-0">● <span x-text="firm.quotes.length"></span> quotes</span>
+          <span class="text-xs text-gray-400 shrink-0" x-text="'#' + firm.rank"></span>
+          <div class="ml-auto shrink-0">
+            <button @click.stop="toggleArchive(firm)"
+              class="text-xs px-2 py-1 rounded-md transition-colors opacity-60 hover:opacity-100"
+              :class="firm.archived ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'"
+              x-text="firm.archived ? 'Unarchive' : 'Archive'"></button>
+          </div>
+        </div>
+
+        <!-- Expanded Content -->
+        <div x-show="firm._expanded" x-collapse class="px-5 pb-5 border-t border-gray-100">
+          <!-- Contact Info (compact inline) -->
+          <div class="mt-4 mb-5 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
+            <span class="font-medium text-gray-700" x-text="firm.contact"></span>
+            <span x-show="firm.contactEmail" class="text-gray-500" x-text="firm.contactEmail"></span>
+            <span x-show="firm.altContact" class="text-gray-500">Alt: <span x-text="firm.altContact"></span></span>
+            <span x-show="firm.altContactEmail" class="text-gray-500" x-text="firm.altContactEmail"></span>
+          </div>
+
+          <!-- Person Dossier -->
+          <div x-show="firm.dossierPerson" class="mb-5">
+            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Person Dossier</h4>
+            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierPerson"></p>
+          </div>
+
+          <!-- Fund Dossier -->
+          <div x-show="firm.dossierFund" class="mb-5">
+            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Fund Dossier</h4>
+            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierFund"></p>
+          </div>
+
+          <!-- Portfolio -->
+          <div x-show="firm.dossierPortfolio" class="mb-5">
+            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Portfolio</h4>
+            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierPortfolio"></p>
+          </div>
+
+          <!-- Why They'd Care -->
+          <div x-show="firm.dossierWhyCare" class="mb-5">
+            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Why They'd Care</h4>
+            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierWhyCare"></p>
+          </div>
+
+          <!-- Shared Belief -->
+          <div x-show="firm.dossierSharedBelief" class="mb-5">
+            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Shared Belief</h4>
+            <p class="text-sm text-gray-600 whitespace-pre-line leading-relaxed" x-text="firm.dossierSharedBelief"></p>
+          </div>
+
+          <!-- Quotes (pull-quote style) -->
+          <div x-show="firm.quotes.length > 0" class="mb-5">
+            <h4 class="text-xs font-bold uppercase tracking-wide text-accent mb-3 pl-3 border-l-2 border-accent">In Their Own Words <span class="text-gray-400 font-normal normal-case tracking-normal" x-text="'(' + firm.quotesContact + ')'"></span></h4>
+            <template x-for="(q, qi) in firm.quotes" :key="qi">
+              <div class="border-l-2 border-gray-200 pl-4 py-2 mb-3">
+                <p class="italic text-gray-700 text-sm leading-relaxed" x-text="'\"' + q.text + '\"'"></p>
+                <p class="text-xs text-gray-400 mt-1.5">
+                  <span x-text="q.source"></span>
+                  <a x-show="q.url" :href="q.url" target="_blank" class="text-accent hover:underline ml-1">→ source</a>
+                </p>
+                <p x-show="q.relevance" class="text-xs text-gray-500 mt-1" x-text="q.relevance"></p>
+              </div>
+            </template>
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2 pl-3 border-l-2 border-accent">Notes</h4>
+            <textarea x-model="firm.userNotes" @blur="saveNotes(firm)" rows="3"
+              class="w-full border border-gray-200 rounded-lg p-3 text-sm resize-y focus:border-accent/30"
+              placeholder="Add notes..."></textarea>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Email Drafts View -->
+  <div x-show="page==='emails' && !loading" class="max-w-7xl mx-auto px-4 py-4 fade-in">
+    <div class="mb-4">
+      <input x-model="emailSearch" type="text" placeholder="Search firms..." class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+    </div>
+
+    <template x-for="firm in emailFirms()" :key="firm.id">
+      <div class="bg-white border border-gray-200 rounded-lg p-4 mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <h3 class="font-semibold" x-text="firm.name"></h3>
+            <span class="text-xs text-gray-500" x-text="firm.contactName + ' · ' + firm.contactEmail"></span>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded-full"
+            :class="statusColor(firm.pipelineStatus)"
+            x-text="statusLabel(firm.pipelineStatus)"></span>
+        </div>
+        <textarea
+          x-model="firm.emailDraft"
+          @blur="saveEmail(firm)"
+          rows="8"
+          class="w-full border border-gray-200 rounded-md p-3 text-sm font-mono resize-y"
+          placeholder="Write email draft..."></textarea>
+        <div class="flex items-center justify-between mt-1">
+          <span class="text-xs text-gray-400" x-text="firm.emailDraft ? firm.emailDraft.length + ' chars' : 'Empty'"></span>
+          <button @click="saveEmail(firm)" class="text-xs text-accent hover:underline">Save</button>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Pipeline Viz View -->
+  <div x-show="page==='viz' && !loading" class="max-w-7xl mx-auto px-4 py-4 fade-in">
+    <h2 class="text-lg font-semibold mb-4">Pipeline Stages</h2>
+
+    <template x-for="stage in statuses" :key="stage.value">
+      <div class="mb-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-3 h-3 rounded-full" :class="stage.dot"></span>
+          <h3 class="font-medium text-sm" x-text="stage.label"></h3>
+          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full" x-text="firmsInStage(stage.value).length"></span>
+        </div>
+        <div class="grid gap-2 pl-5">
+          <template x-for="firm in firmsInStage(stage.value)" :key="firm.id">
+            <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-md px-3 py-2 text-sm">
+              <span class="font-medium truncate" x-text="firm.name"></span>
+              <span class="text-xs text-gray-400 shrink-0" x-text="'Tier ' + firm.tier"></span>
+              <span class="text-xs text-gray-400 shrink-0" x-text="firm.contactName"></span>
+              <select
+                @change="updateStatus(firm, $event.target.value)"
+                :value="firm.pipelineStatus"
+                class="ml-auto text-xs border border-gray-200 rounded px-1 py-0.5 bg-white">
+                <template x-for="s in statuses" :key="s.value">
+                  <option :value="s.value" :selected="s.value === firm.pipelineStatus" x-text="s.label"></option>
+                </template>
+              </select>
+            </div>
+          </template>
+          <div x-show="firmsInStage(stage.value).length === 0" class="text-xs text-gray-400 italic">No firms in this stage</div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Detail Modal -->
+  <div x-show="detail" x-transition class="fixed inset-0 bg-black/30 z-50 flex items-start justify-center pt-8 px-4 overflow-y-auto" @click.self="detail=null">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 mb-8" x-show="detail">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold" x-text="detail?.name"></h2>
+        <button @click="detail=null" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      </div>
+
+      <template x-if="detail">
+        <div>
+          <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+            <div><span class="text-gray-500">Tier:</span> <span class="font-medium" x-text="detail.tier"></span></div>
+            <div><span class="text-gray-500">Rank:</span> <span class="font-medium" x-text="'#' + detail.rank"></span></div>
+            <div><span class="text-gray-500">HQ:</span> <span x-text="detail.hq"></span></div>
+            <div><span class="text-gray-500">Stage:</span> <span x-text="detail.stage"></span></div>
+            <div class="col-span-2"><span class="text-gray-500">Fund:</span> <span x-text="detail.fundSize"></span></div>
+            <div class="col-span-2"><span class="text-gray-500">Thesis:</span> <span x-text="detail.thesis"></span></div>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-sm font-medium text-gray-700">Pipeline Status</label>
+            <select @change="updateStatus(detail, $event.target.value)" :value="detail.pipelineStatus"
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm bg-white">
+              <template x-for="s in statuses" :key="s.value">
+                <option :value="s.value" :selected="s.value === detail.pipelineStatus" x-text="s.label"></option>
+              </template>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-sm font-medium text-gray-700">Contact</label>
+            <p class="text-sm text-gray-600 mt-1" x-text="detail.contact"></p>
+            <p class="text-sm text-gray-600" x-text="detail.contactEmail"></p>
+            <p class="text-sm text-gray-500 mt-1" x-text="detail.contactDetails"></p>
+          </div>
+
+          <div x-show="detail.altContact" class="mb-4">
+            <label class="text-sm font-medium text-gray-700">Alt Contact</label>
+            <p class="text-sm text-gray-600 mt-1" x-text="detail.altContact"></p>
+            <p class="text-sm text-gray-600" x-text="detail.altContactEmail"></p>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-sm font-medium text-gray-700">Why CloudNC</label>
+            <p class="text-sm text-gray-600 mt-1 whitespace-pre-line" x-text="detail.why"></p>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-sm font-medium text-gray-700">Notes</label>
+            <textarea x-model="detail.userNotes" @blur="saveNotes(detail)" rows="3"
+              class="mt-1 w-full border border-gray-200 rounded-md p-2 text-sm resize-y"
+              placeholder="Add notes..."></textarea>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div x-show="toast" x-transition class="fixed bottom-4 right-4 bg-gray-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50" x-text="toast"></div>
+</div>
+
+<script>
+function app() {
+  return {
+    page: "pipeline",
+    firms: [],
+    loading: true,
+    error: null,
+    search: "",
+    filterTier: "",
+    filterStatus: "",
+    researchSearch: "",
+    emailSearch: "",
+    showArchived: false,
+    detail: null,
+    toast: null,
+
+    statuses: [
+      { value: "not_started", label: "Not Started", dot: "bg-gray-300" },
+      { value: "researching", label: "Researching", dot: "bg-blue-400" },
+      { value: "drafting", label: "Drafting", dot: "bg-yellow-400" },
+      { value: "ready_to_send", label: "Ready to Send", dot: "bg-orange-400" },
+      { value: "sent", label: "Sent", dot: "bg-purple-400" },
+      { value: "replied", label: "Replied", dot: "bg-green-400" },
+      { value: "meeting_scheduled", label: "Meeting Scheduled", dot: "bg-accent" },
+    ],
+
+    async init() {
+      await this.loadFirms();
+    },
+
+    async loadFirms() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const res = await fetch("/api/firms");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        this.firms = await res.json();
+      } catch (err) {
+        this.error = "Failed to load firms: " + err.message;
+        // Fallback: try loading static data
+        try {
+          const res = await fetch("/data/firms_with_dossiers.json");
+          if (res.ok) {
+            const raw = await res.json();
+            this.firms = raw.map(f => ({
+              ...f,
+              id: this.slugify(f.name),
+              emailDraft: f.emailDraft || "",
+              userNotes: "",
+              pipelineStatus: f.pipelineStatus || "not_started",
+              quotes: [],
+              quotesContact: "",
+              archived: f.archived || false,
+              _expanded: false,
+            }));
+            // Try loading quotes
+            try {
+              const qres = await fetch("/data/quotes-relevant-all.json");
+              if (qres.ok) {
+                const quotes = await qres.json();
+                const qmap = {};
+                for (const q of quotes) qmap[q.firmName] = q;
+                for (const f of this.firms) {
+                  const m = qmap[f.name];
+                  if (m) { f.quotes = m.quotes; f.quotesContact = m.contactName; }
+                }
+              }
+            } catch(e) {}
+            this.error = null;
+          }
+        } catch(e) {}
+      }
+      this.loading = false;
+    },
+
+    slugify(name) {
+      return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    },
+
+    filteredFirms() {
+      return this.firms.filter(f => {
+        if (this.filterTier && f.tier !== this.filterTier) return false;
+        if (this.filterStatus && f.pipelineStatus !== this.filterStatus) return false;
+        if (this.search) {
+          const s = this.search.toLowerCase();
+          return f.name.toLowerCase().includes(s) || f.thesis.toLowerCase().includes(s) || (f.contactName || "").toLowerCase().includes(s);
+        }
+        return true;
+      });
+    },
+
+    researchFirms() {
+      let list = this.firms;
+      if (!this.showArchived) list = list.filter(f => !f.archived);
+      if (this.researchSearch) {
+        const s = this.researchSearch.toLowerCase();
+        list = list.filter(f => f.name.toLowerCase().includes(s) || (f.contactName || "").toLowerCase().includes(s));
+      }
+      return list;
+    },
+
+    emailFirms() {
+      let list = this.firms;
+      if (!this.showArchived) list = list.filter(f => !f.archived);
+      if (this.emailSearch) {
+        const s = this.emailSearch.toLowerCase();
+        list = list.filter(f => f.name.toLowerCase().includes(s));
+      }
+      return list;
+    },
+
+    archivedCount() {
+      return this.firms.filter(f => f.archived).length;
+    },
+
+    toggleArchive(firm) {
+      firm.archived = !firm.archived;
+      try {
+        fetch(`/api/firms/${firm.id}/archive`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ archived: firm.archived }),
+        }).then(res => {
+          if (res.ok) this.showToast(firm.archived ? "Archived" : "Unarchived");
+        });
+      } catch (e) {
+        this.showToast("Archive toggle saved locally");
+      }
+    },
+
+    firmsInStage(status) {
+      return this.firms.filter(f => f.pipelineStatus === status);
+    },
+
+    statusLabel(status) {
+      const s = this.statuses.find(s => s.value === status);
+      return s ? s.label : status;
+    },
+
+    statusColor(status) {
+      const colors = {
+        not_started: "bg-gray-100 text-gray-600",
+        researching: "bg-blue-100 text-blue-700",
+        drafting: "bg-yellow-100 text-yellow-700",
+        ready_to_send: "bg-orange-100 text-orange-700",
+        sent: "bg-purple-100 text-purple-700",
+        replied: "bg-green-100 text-green-700",
+        meeting_scheduled: "bg-red-50 text-accent",
+      };
+      return colors[status] || "bg-gray-100 text-gray-600";
+    },
+
+    openDetail(firm) {
+      this.detail = firm;
+    },
+
+    async saveEmail(firm) {
+      try {
+        const res = await fetch(`/api/firms/${firm.id}/email`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ emailDraft: firm.emailDraft }),
+        });
+        if (res.ok) this.showToast("Email draft saved");
+      } catch (e) {
+        this.showToast("Save failed (offline mode)");
+      }
+    },
+
+    async saveNotes(firm) {
+      try {
+        const res = await fetch(`/api/firms/${firm.id}/notes`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notes: firm.userNotes }),
+        });
+        if (res.ok) this.showToast("Notes saved");
+      } catch (e) {
+        this.showToast("Save failed (offline mode)");
+      }
+    },
+
+    async updateStatus(firm, newStatus) {
+      firm.pipelineStatus = newStatus;
+      try {
+        const res = await fetch(`/api/firms/${firm.id}/status`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        });
+        if (res.ok) this.showToast("Status updated");
+      } catch (e) {
+        this.showToast("Update failed (offline mode)");
+      }
+    },
+
+    showToast(msg) {
+      this.toast = msg;
+      setTimeout(() => this.toast = null, 2000);
+    },
+  };
+}
+</script>
+</body>
+</html>
